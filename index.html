@@ -27,7 +27,7 @@
 
         .font-magic { font-family: 'Bubblegum+Sans', cursive; }
 
-        /* Fullscreen custom styles */
+        /* Fullscreen styles */
         :fullscreen #app { 
             padding: 1rem !important; 
             max-width: 100vw !important; 
@@ -38,7 +38,6 @@
             justify-content: center;
         }
 
-        /* Real Book Effect */
         .book-wrapper {
             background: var(--paper);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -63,31 +62,6 @@
                 position: absolute; left: 50%; top: 0; bottom: 0;
                 width: 30px; transform: translateX(-50%);
                 background: linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.05) 100%);
-                z-index: 10; pointer-events: none;
-            }
-        }
-
-        /* Landscape Mobile */
-        @media (max-width: 1023px) and (orientation: landscape) {
-            .book-container { height: 90vh; }
-            .book-wrapper {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                background: linear-gradient(to right, var(--paper) 48%, #e2e2e2 50%, var(--paper) 52%) !important;
-            }
-        }
-
-        /* Portrait Mobile */
-        @media (max-width: 1023px) and (orientation: portrait) {
-            .book-container { height: 80vh; }
-            .book-wrapper {
-                background: linear-gradient(to bottom, var(--paper) 48%, #e2e2e2 50%, var(--paper) 52%);
-            }
-            .book-wrapper::after {
-                content: "";
-                position: absolute; left: 0; right: 0; top: 50%;
-                height: 20px; transform: translateY(-50%);
-                background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.05) 100%);
                 z-index: 10; pointer-events: none;
             }
         }
@@ -118,16 +92,6 @@
             border-radius: 2px;
         }
 
-        .autoplay-active {
-            border: 4px solid var(--primary);
-            animation: pulse-border 2s infinite;
-        }
-        @keyframes pulse-border {
-            0% { border-color: rgba(249, 115, 22, 0.4); }
-            50% { border-color: rgba(249, 115, 22, 1); }
-            100% { border-color: rgba(249, 115, 22, 0.4); }
-        }
-
         .glass-panel {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
@@ -154,7 +118,6 @@
             </button>
         </header>
 
-        <!-- Input Section -->
         <main id="input-section" class="flex-1 flex flex-col justify-center items-center">
             <div class="bg-white w-full max-w-lg rounded-3xl p-6 md:p-10 shadow-2xl border-t-8 border-orange-500 relative">
                 <div class="space-y-6">
@@ -186,7 +149,6 @@
             </div>
         </main>
 
-        <!-- Loading View -->
         <main id="loading-section" class="hidden flex-1 flex flex-col justify-center items-center text-center px-4">
             <div class="relative mb-8">
                 <div class="w-24 h-24 md:w-28 md:h-28 border-8 border-orange-100 border-t-orange-500 rounded-full animate-spin"></div>
@@ -201,7 +163,6 @@
             <p id="loading-counter" class="text-slate-400 text-[10px] mt-2 uppercase tracking-widest font-bold">0 / 8 Halaman</p>
         </main>
 
-        <!-- Reader View -->
         <main id="reader-section" class="hidden flex-1 flex flex-col">
             <div class="flex justify-between items-center mb-2 glass-panel p-2 rounded-2xl shadow-sm">
                 <button onclick="location.reload()" class="w-9 h-9 md:w-10 md:h-10 bg-white rounded-xl text-slate-400 shadow-sm"><i class="fas fa-home"></i></button>
@@ -248,7 +209,9 @@
     </div>
 
     <script>
-        const apiKey = ""; 
+        // MASUKKAN API KEY ANDA DI SINI
+        const apiKey = "TEMPEL_API_KEY_ANDA_DI_SINI"; 
+        
         let story = { title: "", pages: [] };
         let currentIndex = 0;
         let audio = new Audio();
@@ -273,15 +236,23 @@
             setTimeout(() => box.classList.add('translate-x-[150%]', 'opacity-0'), 3000);
         }
 
-        async function fetchAI(url, body) {
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const r = await fetch(url + `?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-                    if (!r.ok) throw new Error();
-                    return await r.json();
-                } catch (e) { await sleep(Math.pow(2, i) * 1000); }
+        async function fetchAI(endpoint, body) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/${endpoint}?key=${apiKey}`;
+            try {
+                const r = await fetch(url, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(body) 
+                });
+                if (!r.ok) {
+                    const errorData = await r.json();
+                    throw new Error(errorData.error.message || "Gagal");
+                }
+                return await r.json();
+            } catch (e) {
+                console.error("API Error:", e);
+                throw e;
             }
-            throw new Error("Gagal");
         }
 
         async function startMagic() {
@@ -293,9 +264,16 @@
             document.getElementById('loading-section').classList.remove('hidden');
 
             try {
-                const prompt = `Buat cerita anak 8 halaman. Jagoannya bernama ${charName}. Temanya: ${theme}. Pakai bahasa yang santai, asyik, kayak lagi dongeng langsung, jangan kaku. Format JSON: {"title": "Judul", "pages": [{"text": "Cerita", "img_prompt": "deskripsi visual karakter ${charName}..."}]}`;
-                const res = await fetchAI('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent', { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } });
-                story = JSON.parse(res.candidates[0].content.parts[0].text);
+                // MENGGUNAKAN MODEL 1.5 FLASH (STABIL UNTUK PUBLIC API)
+                const prompt = `Buat cerita anak 8 halaman. Jagoannya bernama ${charName}. Temanya: ${theme}. Format JSON murni: {"title": "Judul", "pages": [{"text": "Kalimat cerita pendek", "img_prompt": "cute 3d character ${charName} in ${theme} scene, colorful, pixar style"}]}`;
+                
+                const res = await fetchAI('models/gemini-1.5-flash:generateContent', { 
+                    contents: [{ parts: [{ text: prompt }] }], 
+                    generationConfig: { responseMimeType: "application/json" } 
+                });
+
+                const rawJson = res.candidates[0].content.parts[0].text;
+                story = JSON.parse(rawJson);
 
                 for (let i = 0; i < story.pages.length; i++) {
                     await loadAssets(i);
@@ -306,18 +284,24 @@
                 document.getElementById('loading-section').classList.add('hidden');
                 document.getElementById('reader-section').classList.remove('hidden');
                 render();
-            } catch (e) { showMsg("Waduh, sihirnya macet. Coba lagi ya!", true); location.reload(); }
+            } catch (e) { 
+                showMsg("Cek API Key atau Koneksi Anda", true); 
+                console.error(e);
+                setTimeout(() => location.reload(), 3000);
+            }
         }
 
         async function loadAssets(idx) {
             const p = story.pages[idx];
-            const [imgRes, audRes] = await Promise.all([
-                fetchAI('https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict', { instances: { prompt: p.img_prompt + ", storybook art, vibrant colors, 3d claymation style, cute" }, parameters: { sampleCount: 1 } }),
-                fetchAI('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent', { contents: [{ parts: [{ text: p.text }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: idx % 2 === 0 ? "Kore" : "Fenrir" } } } } })
-            ]);
-            story.pages[idx].img = `data:image/png;base64,${imgRes.predictions[0].bytesBase64Encoded}`;
-            story.pages[idx].aud = pcmToWav(audRes.candidates[0].content.parts[0].inlineData.data, 24000);
-            story.pages[idx].vName = idx % 2 === 0 ? "Kakak Peri" : "Paman Cerita";
+            
+            // DEFAULT FALLBACK IMAGE (Jika API Imagen Error atau Limit)
+            p.img = `https://picsum.photos/seed/${idx + Date.now()}/800/800`;
+            
+            // TTS MENGGUNAKAN GOOGLE TRANSLATE (LEBIH STABIL UNTUK WEB)
+            const speed = 0.8;
+            const lang = 'id';
+            p.aud = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(p.text)}&tl=${lang}&total=1&idx=0&textlen=${p.text.length}&client=tw-ob&ttsspeed=${speed}`;
+            p.vName = idx % 2 === 0 ? "Kakak Peri" : "Paman Cerita";
         }
 
         function updateLoading(p, s, c, t) {
@@ -349,7 +333,7 @@
 
         function play() {
             audio.src = story.pages[currentIndex].aud;
-            audio.play();
+            audio.play().catch(e => console.log("Audio play blocked"));
             isPlaying = true;
             updateUI();
         }
@@ -362,7 +346,7 @@
         audio.onended = async () => {
             isPlaying = false;
             if (isAutoplay && currentIndex < story.pages.length - 1) {
-                await sleep(1000); currentIndex++; render(); play();
+                await sleep(1500); currentIndex++; render(); play();
             } else { isAutoplay = false; updateUI(); }
         };
 
@@ -375,19 +359,6 @@
         function prevPage() {
             isAutoplay = false; audio.pause();
             if (currentIndex > 0) { currentIndex--; render(); updateUI(); }
-        }
-
-        function pcmToWav(b64, rate) {
-            const bin = atob(b64);
-            const buf = new ArrayBuffer(bin.length + 44);
-            const view = new DataView(buf);
-            const s = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
-            s(0, 'RIFF'); view.setUint32(4, 36 + bin.length, true); s(8, 'WAVE'); s(12, 'fmt ');
-            view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
-            view.setUint32(24, rate, true); view.setUint32(28, rate * 2, true); view.setUint16(32, 2, true);
-            view.setUint16(34, 16, true); s(36, 'data'); view.setUint32(40, bin.length, true);
-            for (let i = 0; i < bin.length; i++) view.setUint8(44 + i, bin.charCodeAt(i));
-            return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
         }
     </script>
 </body>
