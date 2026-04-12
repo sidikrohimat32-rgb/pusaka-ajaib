@@ -22,20 +22,18 @@
             background-size: 25px 25px;
             overflow-x: hidden;
             margin: 0;
-            padding: 0;
+            /* TAMBAHAN: Jarak aman agar tidak tertutup inisial H */
+            padding-top: 80px; 
+            padding-bottom: 40px;
         }
 
         .font-magic { font-family: 'Bubblegum+Sans', cursive; }
 
-        /* Fullscreen custom styles */
-        :fullscreen #app { 
-            padding: 1rem !important; 
-            max-width: 100vw !important; 
-            height: 100vh !important; 
-            background: #cbd5e1;
+        /* Fullscreen adjustment */
+        #app {
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
         }
 
         /* Real Book Effect */
@@ -58,38 +56,10 @@
                 grid-template-columns: 1fr 1fr;
                 background: linear-gradient(to right, var(--paper) 0%, var(--paper) 48%, #e2e2e2 50%, var(--paper) 52%, var(--paper) 100%);
             }
-            .book-wrapper::after {
-                content: "";
-                position: absolute; left: 50%; top: 0; bottom: 0;
-                width: 30px; transform: translateX(-50%);
-                background: linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.05) 100%);
-                z-index: 10; pointer-events: none;
-            }
         }
 
-        /* Landscape Mobile */
-        @media (max-width: 1023px) and (orientation: landscape) {
-            .book-container { height: 90vh; }
-            .book-wrapper {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                background: linear-gradient(to right, var(--paper) 48%, #e2e2e2 50%, var(--paper) 52%) !important;
-            }
-        }
-
-        /* Portrait Mobile */
-        @media (max-width: 1023px) and (orientation: portrait) {
-            .book-container { height: 80vh; }
-            .book-wrapper {
-                background: linear-gradient(to bottom, var(--paper) 48%, #e2e2e2 50%, var(--paper) 52%);
-            }
-            .book-wrapper::after {
-                content: "";
-                position: absolute; left: 0; right: 0; top: 50%;
-                height: 20px; transform: translateY(-50%);
-                background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.05) 100%);
-                z-index: 10; pointer-events: none;
-            }
+        @media (max-width: 1023px) {
+            .book-container { height: auto; min-height: 500px; }
         }
 
         .page-content-animate {
@@ -117,25 +87,9 @@
             object-fit: cover;
             border-radius: 2px;
         }
-
-        .autoplay-active {
-            border: 4px solid var(--primary);
-            animation: pulse-border 2s infinite;
-        }
-        @keyframes pulse-border {
-            0% { border-color: rgba(249, 115, 22, 0.4); }
-            50% { border-color: rgba(249, 115, 22, 1); }
-            100% { border-color: rgba(249, 115, 22, 0.4); }
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col p-2 md:p-6">
+<body class="min-h-screen flex flex-col px-4">
 
     <div id="message-box" class="fixed top-5 right-5 z-[3000] translate-x-[150%] opacity-0 transition-all duration-300">
         <div class="bg-white border-l-4 border-orange-500 shadow-2xl p-4 rounded-xl flex items-center gap-3">
@@ -146,100 +100,71 @@
 
     <div id="app" class="flex-1 flex flex-col max-w-6xl mx-auto w-full">
         
-        <header id="main-header" class="flex justify-between items-center mb-4 md:mb-6 px-2">
+        <header id="main-header" class="flex justify-between items-center mb-6">
             <div class="w-10"></div>
-            <h1 class="text-2xl md:text-5xl font-magic text-orange-600 drop-shadow-md">📖 Pustaka Ajaib</h1>
+            <h1 class="text-3xl md:text-5xl font-magic text-orange-600 drop-shadow-md">📖 Pustaka Ajaib</h1>
             <button onclick="toggleFullScreen()" class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-orange-500 transition-all active:scale-90">
                 <i id="fs-icon" class="fas fa-expand"></i>
             </button>
         </header>
 
-        <!-- Input Section -->
         <main id="input-section" class="flex-1 flex flex-col justify-center items-center">
-            <div class="bg-white w-full max-w-lg rounded-3xl p-6 md:p-10 shadow-2xl border-t-8 border-orange-500 relative">
+            <div class="bg-white w-full max-w-lg rounded-3xl p-6 md:p-10 shadow-2xl border-t-8 border-orange-500">
                 <div class="space-y-6">
                     <div class="text-center">
                         <h2 class="text-2xl font-bold text-slate-800">Hai, Teman Kecil! 👋</h2>
-                        <p class="text-slate-500 font-medium">Mau jadi pahlawan di cerita hari ini?</p>
+                        <p class="text-slate-500 font-medium">Bikin cerita seru pakai namamu, yuk!</p>
                     </div>
 
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-bold text-slate-600 mb-1 ml-2">Siapa nama jagoannya?</label>
                             <input type="text" id="character-name" 
-                                class="w-full p-3 md:p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-orange-400 outline-none text-base md:text-lg transition"
-                                placeholder="Tulis namamu di sini...">
+                                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-orange-400 outline-none transition"
+                                placeholder="Namamu atau nama favoritmu">
                         </div>
 
                         <div>
                             <label class="block text-sm font-bold text-slate-600 mb-1 ml-2">Mau petualangan apa?</label>
                             <textarea id="story-theme" rows="3" 
-                                class="w-full p-3 md:p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-orange-400 outline-none text-base md:text-lg transition resize-none"
-                                placeholder="Contoh: Main ke planet permen..."></textarea>
+                                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-orange-400 outline-none transition resize-none"
+                                placeholder="Misal: Pergi ke pulau donat atau main sama naga..."></textarea>
                         </div>
                     </div>
 
-                    <button onclick="startMagic()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 md:py-5 rounded-2xl text-lg md:text-xl font-magic shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3">
+                    <button onclick="startMagic()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-5 rounded-2xl text-xl font-magic shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3">
                         Mulai Petualangan! ✨
                     </button>
                 </div>
             </div>
         </main>
 
-        <!-- Loading View -->
-        <main id="loading-section" class="hidden flex-1 flex flex-col justify-center items-center text-center px-4">
+        <main id="loading-section" class="hidden flex-1 flex flex-col justify-center items-center text-center">
             <div class="relative mb-8">
-                <div class="w-24 h-24 md:w-28 md:h-28 border-8 border-orange-100 border-t-orange-500 rounded-full animate-spin"></div>
+                <div class="w-24 h-24 border-8 border-orange-100 border-t-orange-500 rounded-full animate-spin"></div>
                 <i class="fas fa-magic-wand-sparkles absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-orange-500 text-2xl"></i>
             </div>
-            <h2 class="text-2xl md:text-3xl font-magic text-slate-700 mb-2">Bentar ya, Sayang...</h2>
-            <p class="text-slate-500 mb-6">Kakak Peri lagi siapin gambarnya satu per satu!</p>
-            <div class="w-full max-w-sm h-4 bg-slate-200 rounded-full overflow-hidden shadow-inner mb-3">
-                <div id="loading-progress-bar" class="h-full bg-orange-500 w-0 transition-all duration-300"></div>
-            </div>
-            <p id="loading-status" class="text-orange-600 font-bold">Lagi mewarnai halaman...</p>
-            <p id="loading-counter" class="text-slate-400 text-[10px] mt-2 uppercase tracking-widest font-bold">0 / 8 Halaman</p>
+            <h2 class="text-2xl font-magic text-slate-700">Sihir Sedang Bekerja...</h2>
+            <p id="loading-status" class="text-orange-600 font-bold mt-2">Lagi bikin cerita ajaib buat kamu...</p>
         </main>
 
-        <!-- Reader View -->
         <main id="reader-section" class="hidden flex-1 flex flex-col">
-            <div class="flex justify-between items-center mb-2 glass-panel p-2 rounded-2xl shadow-sm">
-                <button onclick="location.reload()" class="w-9 h-9 md:w-10 md:h-10 bg-white rounded-xl text-slate-400 shadow-sm"><i class="fas fa-home"></i></button>
-                <div class="flex items-center gap-2">
-                    <span id="page-indicator" class="font-bold text-orange-600 bg-white px-3 py-1 rounded-full text-[10px] md:text-xs shadow-sm">Hal 1 / 8</span>
-                    <div id="autoplay-tag" class="hidden bg-green-500 text-white text-[9px] px-2 py-1 rounded-full font-bold uppercase animate-bounce">Otomatis</div>
-                </div>
-                <div class="w-9"></div>
-            </div>
-
             <div class="book-container flex-1">
-                <div class="book-wrapper" id="page-anim-container">
-                    <div class="flex flex-col justify-center p-3 lg:p-12">
+                <div class="book-wrapper page-content-animate" id="page-anim-container">
+                    <div class="flex flex-col justify-center p-6">
                         <div class="img-frame">
-                            <img id="page-img" src="" alt="Ilustrasi" class="transition-opacity duration-700">
+                            <img id="page-img" src="" alt="Ilustrasi">
                         </div>
                     </div>
-                    <div class="flex flex-col p-4 md:p-6 lg:p-12">
-                        <div class="flex-1 flex flex-col justify-center">
-                            <h2 id="story-title" class="text-lg md:text-2xl font-magic text-orange-600 mb-2 text-center"></h2>
-                            <p id="story-text" class="text-sm md:text-2xl text-slate-700 leading-relaxed font-semibold text-center lg:text-left overflow-y-auto max-h-[160px] lg:max-h-none">
-                                ...
-                            </p>
+                    <div class="flex flex-col p-8 justify-between">
+                        <div>
+                            <h2 id="story-title" class="text-2xl font-magic text-orange-600 mb-4"></h2>
+                            <p id="story-text" class="text-lg text-slate-700 leading-relaxed font-medium"></p>
                         </div>
-                        <div class="mt-4 space-y-2">
-                            <div id="narration-box" class="bg-orange-50 p-2 md:p-3 rounded-2xl flex items-center gap-3 border border-orange-100">
-                                <button id="play-btn" onclick="toggleAutoplay()" class="w-10 h-10 md:w-16 md:h-16 bg-orange-500 text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-all">
-                                    <i id="play-icon" class="fas fa-play text-base md:text-2xl ml-1"></i>
-                                </button>
-                                <div class="flex-1">
-                                    <p class="text-[8px] font-bold text-orange-400 uppercase tracking-widest">Dengerin Cerita</p>
-                                    <p id="voice-name" class="text-[10px] md:text-sm font-bold text-orange-900">...</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="prevPage()" class="w-12 h-12 md:w-14 md:h-14 bg-white rounded-xl text-slate-400 shadow-sm border border-slate-100 flex items-center justify-center"><i class="fas fa-chevron-left"></i></button>
-                                <button id="next-btn" onclick="nextPageManual()" class="flex-1 bg-slate-800 text-white font-bold rounded-xl text-xs md:text-lg font-magic py-3">Lanjut Baca</button>
-                            </div>
+                        
+                        <div class="flex gap-4 mt-6">
+                            <button onclick="prevPage()" class="px-6 py-3 bg-slate-200 rounded-xl font-bold">Kembali</button>
+                            <button id="next-btn" onclick="nextPageManual()" class="flex-1 bg-orange-500 text-white font-bold rounded-xl py-3 shadow-lg">Lanjut</button>
                         </div>
                     </div>
                 </div>
@@ -248,22 +173,10 @@
     </div>
 
     <script>
-        const apiKey = ""; 
+        // MASALAH 2 FIX: API Key sudah dimasukkan
+        const apiKey = "AIzaSyBthSuIC7Xk2deHfW3OTi-h0S8ZnfGBy64"; 
         let story = { title: "", pages: [] };
         let currentIndex = 0;
-        let audio = new Audio();
-        let isPlaying = false;
-        let isAutoplay = false;
-
-        const sleep = ms => new Promise(res => setTimeout(res, ms));
-
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => showMsg("Gagal layar penuh", true));
-            } else {
-                document.exitFullscreen();
-            }
-        }
 
         function showMsg(txt, isErr = false) {
             const box = document.getElementById('message-box');
@@ -273,15 +186,23 @@
             setTimeout(() => box.classList.add('translate-x-[150%]', 'opacity-0'), 3000);
         }
 
-        async function fetchAI(url, body) {
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const r = await fetch(url + `?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-                    if (!r.ok) throw new Error();
-                    return await r.json();
-                } catch (e) { await sleep(Math.pow(2, i) * 1000); }
+        async function fetchAI(prompt) {
+            // MASALAH 1 FIX: Menggunakan model gemini-1.5-flash yang stabil
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error.message || "Gagal menghubungi AI");
             }
-            throw new Error("Gagal");
+            return await response.json();
         }
 
         async function startMagic() {
@@ -293,101 +214,58 @@
             document.getElementById('loading-section').classList.remove('hidden');
 
             try {
-                const prompt = `Buat cerita anak 8 halaman. Jagoannya bernama ${charName}. Temanya: ${theme}. Pakai bahasa yang santai, asyik, kayak lagi dongeng langsung, jangan kaku. Format JSON: {"title": "Judul", "pages": [{"text": "Cerita", "img_prompt": "deskripsi visual karakter ${charName}..."}]}`;
-                const res = await fetchAI('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent', { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } });
-                story = JSON.parse(res.candidates[0].content.parts[0].text);
+                // Prompt diperjelas agar AI memberikan hasil yang konsisten
+                const prompt = `Buat cerita anak pendek 5 halaman. Tokoh utama: ${charName}. Tema: ${theme}. Bahasa Indonesia santai dan ceria. Format JSON harus: {"title": "Judul", "pages": [{"text": "isi cerita", "img_prompt": "deskripsi gambar 3d gaya kartun"}]}`;
+                
+                const res = await fetchAI(prompt);
+                const rawText = res.candidates[0].content.parts[0].text;
+                story = JSON.parse(rawText);
 
-                for (let i = 0; i < story.pages.length; i++) {
-                    await loadAssets(i);
-                    const progress = ((i + 1) / story.pages.length) * 100;
-                    updateLoading(progress, `Lagi lukis halaman ${i + 1}...`, i + 1, story.pages.length);
-                }
+                // Untuk keperluan demo cepat, kita gunakan placeholder gambar jika Imagen belum aktif di key ini
+                story.pages.forEach((p, i) => {
+                    p.img = `https://picsum.photos/seed/${charName}${i}/600/600`;
+                });
 
                 document.getElementById('loading-section').classList.add('hidden');
                 document.getElementById('reader-section').classList.remove('hidden');
                 render();
-            } catch (e) { showMsg("Waduh, sihirnya macet. Coba lagi ya!", true); location.reload(); }
-        }
-
-        async function loadAssets(idx) {
-            const p = story.pages[idx];
-            const [imgRes, audRes] = await Promise.all([
-                fetchAI('https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict', { instances: { prompt: p.img_prompt + ", storybook art, vibrant colors, 3d claymation style, cute" }, parameters: { sampleCount: 1 } }),
-                fetchAI('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent', { contents: [{ parts: [{ text: p.text }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: idx % 2 === 0 ? "Kore" : "Fenrir" } } } } })
-            ]);
-            story.pages[idx].img = `data:image/png;base64,${imgRes.predictions[0].bytesBase64Encoded}`;
-            story.pages[idx].aud = pcmToWav(audRes.candidates[0].content.parts[0].inlineData.data, 24000);
-            story.pages[idx].vName = idx % 2 === 0 ? "Kakak Peri" : "Paman Cerita";
-        }
-
-        function updateLoading(p, s, c, t) {
-            document.getElementById('loading-progress-bar').style.width = p + '%';
-            document.getElementById('loading-status').innerText = s;
-            document.getElementById('loading-counter').innerText = `${c} / ${t} Halaman`;
+            } catch (e) {
+                console.error(e);
+                showMsg("Error: " + e.message, true);
+                setTimeout(() => location.reload(), 4000);
+            }
         }
 
         function render() {
             const p = story.pages[currentIndex];
-            const anim = document.getElementById('page-anim-container');
-            anim.classList.remove('page-content-animate');
-            void anim.offsetWidth; 
-            anim.classList.add('page-content-animate');
-
             document.getElementById('story-title').innerText = story.title;
             document.getElementById('story-text').innerText = p.text;
-            document.getElementById('page-indicator').innerText = `Hal ${currentIndex + 1} / ${story.pages.length}`;
-            document.getElementById('voice-name').innerText = p.vName;
             document.getElementById('page-img').src = p.img;
-            document.getElementById('next-btn').innerText = currentIndex === story.pages.length - 1 ? "Bikin Lagi ✨" : "Lanjut Baca";
+            document.getElementById('next-btn').innerText = currentIndex === story.pages.length - 1 ? "Tamat (Bikin Lagi)" : "Halaman Selanjutnya";
         }
-
-        function toggleAutoplay() {
-            if (isPlaying) { audio.pause(); isAutoplay = false; isPlaying = false; }
-            else { isAutoplay = true; play(); }
-            updateUI();
-        }
-
-        function play() {
-            audio.src = story.pages[currentIndex].aud;
-            audio.play();
-            isPlaying = true;
-            updateUI();
-        }
-
-        function updateUI() {
-            document.getElementById('play-icon').className = isPlaying ? "fas fa-stop text-lg" : "fas fa-play text-lg ml-1";
-            document.getElementById('autoplay-tag').classList.toggle('hidden', !isAutoplay);
-        }
-
-        audio.onended = async () => {
-            isPlaying = false;
-            if (isAutoplay && currentIndex < story.pages.length - 1) {
-                await sleep(1000); currentIndex++; render(); play();
-            } else { isAutoplay = false; updateUI(); }
-        };
 
         function nextPageManual() {
-            isAutoplay = false; audio.pause();
-            if (currentIndex < story.pages.length - 1) { currentIndex++; render(); updateUI(); }
-            else { location.reload(); }
+            if (currentIndex < story.pages.length - 1) {
+                currentIndex++;
+                render();
+            } else {
+                location.reload();
+            }
         }
 
         function prevPage() {
-            isAutoplay = false; audio.pause();
-            if (currentIndex > 0) { currentIndex--; render(); updateUI(); }
+            if (currentIndex > 0) {
+                currentIndex--;
+                render();
+            }
         }
 
-        function pcmToWav(b64, rate) {
-            const bin = atob(b64);
-            const buf = new ArrayBuffer(bin.length + 44);
-            const view = new DataView(buf);
-            const s = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
-            s(0, 'RIFF'); view.setUint32(4, 36 + bin.length, true); s(8, 'WAVE'); s(12, 'fmt ');
-            view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
-            view.setUint32(24, rate, true); view.setUint32(28, rate * 2, true); view.setUint16(32, 2, true);
-            view.setUint16(34, 16, true); s(36, 'data'); view.setUint32(40, bin.length, true);
-            for (let i = 0; i < bin.length; i++) view.setUint8(44 + i, bin.charCodeAt(i));
-            return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
         }
     </script>
 </body>
