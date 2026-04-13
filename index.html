@@ -2,76 +2,124 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pustaka Ajaib - Dongeng Anak AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Cerita Ajaib</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Bubblegum+Sans&display=swap');
-        
-        :root { --primary: #f97316; --paper: #fdfbf7; }
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap');
+        body { font-family: 'Quicksand', sans-serif; background: #f0f2f5; }
+        .book-page { background: #fffdf7; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 15px; }
+    </style>
+</head>
+<body class="p-4 md:p-10">
 
-        body {
-            font-family: 'Quicksand', sans-serif;
-            background: #cbd5e1;
-            background-image: radial-gradient(#94a3b8 1px, transparent 1px);
-            background-size: 25px 25px;
-            margin: 0; padding: 0;
-        }
+    <div id="app" class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-center text-orange-600 mb-8">📖 Pustaka Ajaib AI</h1>
 
-        .font-magic { font-family: 'Bubblegum+Sans', cursive; }
+        <div id="input-ui" class="bg-white p-6 rounded-2xl shadow-lg border-b-4 border-orange-500">
+            <input type="text" id="name" placeholder="Nama Jagoan..." class="w-full p-3 mb-4 border rounded-xl outline-none focus:ring-2 focus:ring-orange-400">
+            <textarea id="theme" placeholder="Mau cerita tentang apa? (Contoh: Kucing terbang)" class="w-full p-3 mb-4 border rounded-xl outline-none focus:ring-2 focus:ring-orange-400"></textarea>
+            <button onclick="buatCerita()" class="w-full bg-orange-500 text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition">Mulai Petualangan ✨</button>
+        </div>
 
-        .book-wrapper {
-            background: var(--paper);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-        }
+        <div id="loading-ui" class="hidden text-center py-20">
+            <div class="animate-bounce text-4xl mb-4">✨</div>
+            <p class="text-xl font-bold text-slate-600">Kakak Peri sedang menulis cerita...</p>
+        </div>
 
-        @media (min-width: 1024px) {
-            .book-container { perspective: 2000px; height: 600px; }
-            .book-wrapper {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                background: linear-gradient(to right, var(--paper) 48%, #e2e2e2 50%, var(--paper) 52%);
+        <div id="reader-ui" class="hidden">
+            <div class="book-page p-6 md:p-10 flex flex-col md:flex-row gap-8">
+                <div class="w-full md:w-1/2">
+                    <img id="story-img" src="" class="w-full aspect-square object-cover rounded-xl shadow-inner border-4 border-white">
+                </div>
+                <div class="w-full md:w-1/2 flex flex-col justify-between">
+                    <div>
+                        <h2 id="story-title" class="text-2xl font-bold text-orange-600 mb-4"></h2>
+                        <p id="story-text" class="text-xl leading-relaxed text-slate-700 font-medium"></p>
+                    </div>
+                    <div class="mt-8 flex flex-col gap-3">
+                        <button onclick="dengarSuara()" class="bg-blue-500 text-white py-3 rounded-xl font-bold hover:bg-blue-600">🔊 Dengarkan</button>
+                        <div class="flex gap-2">
+                            <button onclick="nextPage()" class="flex-1 bg-slate-800 text-white py-3 rounded-xl font-bold">Lanjut Halaman</button>
+                            <button onclick="location.reload()" class="p-3 bg-slate-200 rounded-xl text-slate-600">🏠</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p id="page-num" class="text-center mt-4 font-bold text-slate-400"></p>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SETTING API KEY ---
+        const API_KEY = "ISI_API_KEY_ANDA_DISINI";
+
+        let storyData = { pages: [] };
+        let index = 0;
+
+        async function buatCerita() {
+            const nama = document.getElementById('name').value;
+            const tema = document.getElementById('theme').value;
+            if(!nama || !tema) return alert("Isi nama & tema dulu ya!");
+
+            document.getElementById('input-ui').classList.add('hidden');
+            document.getElementById('loading-ui').classList.remove('hidden');
+
+            const prompt = `Buat cerita anak 5 halaman tentang ${nama} dengan tema ${tema}. Format JSON: {"title": "Judul", "pages": [{"text": "Isi cerita halaman ini"}]}`;
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+
+                const data = await res.json();
+                const cleanData = JSON.parse(data.candidates[0].content.parts[0].text);
+                storyData = cleanData;
+
+                document.getElementById('loading-ui').classList.add('hidden');
+                document.getElementById('reader-ui').classList.remove('hidden');
+                tampilkanHalaman();
+
+            } catch (err) {
+                alert("Error: Pastikan API KEY benar!");
+                location.reload();
             }
         }
 
-        .img-frame {
-            aspect-ratio: 1/1;
-            background: #fff;
-            padding: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            max-width: 85%;
-            margin: auto;
+        function tampilkanHalaman() {
+            const hlm = storyData.pages[index];
+            document.getElementById('story-title').innerText = storyData.title;
+            document.getElementById('story-text').innerText = hlm.text;
+            document.getElementById('page-num').innerText = `Halaman ${index + 1} dari ${storyData.pages.length}`;
+            
+            // Gambar otomatis dari internet (Pasti jalan di Vercel)
+            document.getElementById('story-img').src = `https://loremflickr.com/600/600/cartoon,${encodeURIComponent(document.getElementById('theme').value)}?lock=${index}`;
+            
+            window.speechSynthesis.cancel(); // Stop suara sebelumnya
         }
 
-        .img-frame img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col p-4 md:p-8">
+        function nextPage() {
+            if(index < storyData.pages.length - 1) {
+                index++;
+                tampilkanHalaman();
+            } else {
+                alert("Cerita Selesai! Hebat!");
+                location.reload();
+            }
+        }
 
-    <div id="app" class="flex-1 flex flex-col max-w-6xl mx-auto w-full">
-        
-        <header class="text-center mb-6">
-            <h1 class="text-3xl md:text-5xl font-magic text-orange-600 drop-shadow-md">📖 Pustaka Ajaib</h1>
-        </header>
-
-        <main id="input-section" class="flex-1 flex flex-col justify-center items-center">
-            <div class="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl border-t-8 border-orange-500">
-                <div class="space-y-5">
-                    <div class="text-center">
-                        <h2 class="text-xl font-bold text-slate-800">Halo, Ayah & Bunda!</h2>
-                        <p class="text-slate-500 text-sm">Buat dongeng kustom untuk si kecil sekarang.</p>
-                    </div>
-
-                    <div class="space-y-3">
-                        <input type="text" id="character-name" placeholder="Nama si kecil (Jagoan)" 
-                            class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-orange-400 outline-none">
-                        
-                        <textarea id="story-theme" rows="3" placeholder="Tema (Contoh: Berpetualang ke bulan)" 
-                            class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-orange-400 outline-none resize-none"></textarea>
+        function dengarSuara() {
+            const teks = storyData.pages[index].text;
+            const suara = new SpeechSynthesisUtterance(teks);
+            suara.lang = 'id-ID';
+            suara.rate = 0.9;
+            window.speechSynthesis.speak(suara);
+        }
+    </script>
+</body>
+</html>
