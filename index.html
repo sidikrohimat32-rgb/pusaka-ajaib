@@ -2,123 +2,392 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buku Cerita Ajaib</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pustaka Ajaib AI - Buku Cerita Seru!</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap');
-        body { font-family: 'Quicksand', sans-serif; background: #f0f2f5; }
-        .book-page { background: #fffdf7; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 15px; }
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Bubblegum+Sans&display=swap');
+        
+        :root {
+            --primary: #f97316;
+            --paper: #fdfbf7;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: #cbd5e1;
+            color: #1e293b;
+            background-image: radial-gradient(#94a3b8 1px, transparent 1px);
+            background-size: 25px 25px;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .font-magic { font-family: 'Bubblegum+Sans', cursive; }
+
+        /* Fullscreen custom styles */
+        :fullscreen #app { 
+            padding: 1rem !important; 
+            max-width: 100vw !important; 
+            height: 100vh !important; 
+            background: #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Real Book Effect */
+        .book-wrapper {
+            background: var(--paper);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 1024px) {
+            .book-container { perspective: 2000px; height: 650px; }
+            .book-wrapper {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                background: linear-gradient(to right, var(--paper) 0%, var(--paper) 48%, #e2e2e2 50%, var(--paper) 52%, var(--paper) 100%);
+            }
+            .book-wrapper::after {
+                content: "";
+                position: absolute; left: 50%; top: 0; bottom: 0;
+                width: 30px; transform: translateX(-50%);
+                background: linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.05) 100%);
+                z-index: 10; pointer-events: none;
+            }
+        }
+
+        /* Landscape Mobile */
+        @media (max-width: 1023px) and (orientation: landscape) {
+            .book-container { height: 90vh; }
+            .book-wrapper {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                background: linear-gradient(to right, var(--paper) 48%, #e2e2e2 50%, var(--paper) 52%) !important;
+            }
+        }
+
+        /* Portrait Mobile */
+        @media (max-width: 1023px) and (orientation: portrait) {
+            .book-container { height: 80vh; }
+            .book-wrapper {
+                background: linear-gradient(to bottom, var(--paper) 48%, #e2e2e2 50%, var(--paper) 52%);
+            }
+            .book-wrapper::after {
+                content: "";
+                position: absolute; left: 0; right: 0; top: 50%;
+                height: 20px; transform: translateY(-50%);
+                background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.05) 100%);
+                z-index: 10; pointer-events: none;
+            }
+        }
+
+        .page-content-animate {
+            animation: pageFadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes pageFadeIn {
+            0% { opacity: 0; filter: blur(5px); }
+            100% { opacity: 1; filter: blur(0); }
+        }
+
+        .img-frame {
+            aspect-ratio: 1/1;
+            background: #fff;
+            padding: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            position: relative;
+            max-width: 85%;
+            margin: auto;
+        }
+
+        .img-frame img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+
+        .autoplay-active {
+            border: 4px solid var(--primary);
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { border-color: rgba(249, 115, 22, 0.4); }
+            50% { border-color: rgba(249, 115, 22, 1); }
+            100% { border-color: rgba(249, 115, 22, 0.4); }
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="min-h-screen flex flex-col p-2 md:p-6">
 
-    <div id="app" class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold text-center text-orange-600 mb-8">📖 Pustaka Ajaib AI</h1>
-
-        <div id="input-ui" class="bg-white p-6 rounded-2xl shadow-lg border-b-4 border-orange-500">
-            <input type="text" id="name" placeholder="Nama Jagoan..." class="w-full p-3 mb-4 border rounded-xl outline-none focus:ring-2 focus:ring-orange-400">
-            <textarea id="theme" placeholder="Mau cerita tentang apa? (Contoh: Kucing terbang)" class="w-full p-3 mb-4 border rounded-xl outline-none focus:ring-2 focus:ring-orange-400"></textarea>
-            <button onclick="buatCerita()" class="w-full bg-orange-500 text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition">Mulai Petualangan ✨</button>
+    <div id="message-box" class="fixed top-5 right-5 z-[3000] translate-x-[150%] opacity-0 transition-all duration-300">
+        <div class="bg-white border-l-4 border-orange-500 shadow-2xl p-4 rounded-xl flex items-center gap-3">
+            <i id="message-icon" class="text-orange-500 text-xl"></i>
+            <p id="message-text" class="font-bold text-slate-800 text-sm"></p>
         </div>
+    </div>
 
-        <div id="loading-ui" class="hidden text-center py-20">
-            <div class="animate-bounce text-4xl mb-4">✨</div>
-            <p class="text-xl font-bold text-slate-600">Kakak Peri sedang menulis cerita...</p>
-        </div>
+    <div id="app" class="flex-1 flex flex-col max-w-6xl mx-auto w-full">
+        
+        <header id="main-header" class="flex justify-between items-center mb-4 md:mb-6 px-2">
+            <div class="w-10"></div>
+            <h1 class="text-2xl md:text-5xl font-magic text-orange-600 drop-shadow-md">📖 Pustaka Ajaib</h1>
+            <button onclick="toggleFullScreen()" class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-orange-500 transition-all active:scale-90">
+                <i id="fs-icon" class="fas fa-expand"></i>
+            </button>
+        </header>
 
-        <div id="reader-ui" class="hidden">
-            <div class="book-page p-6 md:p-10 flex flex-col md:flex-row gap-8">
-                <div class="w-full md:w-1/2">
-                    <img id="story-img" src="" class="w-full aspect-square object-cover rounded-xl shadow-inner border-4 border-white">
-                </div>
-                <div class="w-full md:w-1/2 flex flex-col justify-between">
-                    <div>
-                        <h2 id="story-title" class="text-2xl font-bold text-orange-600 mb-4"></h2>
-                        <p id="story-text" class="text-xl leading-relaxed text-slate-700 font-medium"></p>
+        <!-- Input Section -->
+        <main id="input-section" class="flex-1 flex flex-col justify-center items-center">
+            <div class="bg-white w-full max-w-lg rounded-3xl p-6 md:p-10 shadow-2xl border-t-8 border-orange-500 relative">
+                <div class="space-y-6">
+                    <div class="text-center">
+                        <h2 class="text-2xl font-bold text-slate-800">Hai, Teman Kecil! 👋</h2>
+                        <p class="text-slate-500 font-medium">Mau jadi pahlawan di cerita hari ini?</p>
                     </div>
-                    <div class="mt-8 flex flex-col gap-3">
-                        <button onclick="dengarSuara()" class="bg-blue-500 text-white py-3 rounded-xl font-bold hover:bg-blue-600">🔊 Dengarkan</button>
-                        <div class="flex gap-2">
-                            <button onclick="nextPage()" class="flex-1 bg-slate-800 text-white py-3 rounded-xl font-bold">Lanjut Halaman</button>
-                            <button onclick="location.reload()" class="p-3 bg-slate-200 rounded-xl text-slate-600">🏠</button>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-600 mb-1 ml-2">Siapa nama jagoannya?</label>
+                            <input type="text" id="character-name" 
+                                class="w-full p-3 md:p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-orange-400 outline-none text-base md:text-lg transition"
+                                placeholder="Tulis namamu di sini...">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-600 mb-1 ml-2">Mau petualangan apa?</label>
+                            <textarea id="story-theme" rows="3" 
+                                class="w-full p-3 md:p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-orange-400 outline-none text-base md:text-lg transition resize-none"
+                                placeholder="Contoh: Main ke planet permen..."></textarea>
+                        </div>
+                    </div>
+
+                    <button onclick="startMagic()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 md:py-5 rounded-2xl text-lg md:text-xl font-magic shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3">
+                        Mulai Petualangan! ✨
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Loading View -->
+        <main id="loading-section" class="hidden flex-1 flex flex-col justify-center items-center text-center px-4">
+            <div class="relative mb-8">
+                <div class="w-24 h-24 md:w-28 md:h-28 border-8 border-orange-100 border-t-orange-500 rounded-full animate-spin"></div>
+                <i class="fas fa-magic-wand-sparkles absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-orange-500 text-2xl"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-magic text-slate-700 mb-2">Bentar ya, Sayang...</h2>
+            <p class="text-slate-500 mb-6">Kakak Peri lagi siapin gambarnya satu per satu!</p>
+            <div class="w-full max-w-sm h-4 bg-slate-200 rounded-full overflow-hidden shadow-inner mb-3">
+                <div id="loading-progress-bar" class="h-full bg-orange-500 w-0 transition-all duration-300"></div>
+            </div>
+            <p id="loading-status" class="text-orange-600 font-bold">Lagi mewarnai halaman...</p>
+            <p id="loading-counter" class="text-slate-400 text-[10px] mt-2 uppercase tracking-widest font-bold">0 / 8 Halaman</p>
+        </main>
+
+        <!-- Reader View -->
+        <main id="reader-section" class="hidden flex-1 flex flex-col">
+            <div class="flex justify-between items-center mb-2 glass-panel p-2 rounded-2xl shadow-sm">
+                <button onclick="location.reload()" class="w-9 h-9 md:w-10 md:h-10 bg-white rounded-xl text-slate-400 shadow-sm"><i class="fas fa-home"></i></button>
+                <div class="flex items-center gap-2">
+                    <span id="page-indicator" class="font-bold text-orange-600 bg-white px-3 py-1 rounded-full text-[10px] md:text-xs shadow-sm">Hal 1 / 8</span>
+                    <div id="autoplay-tag" class="hidden bg-green-500 text-white text-[9px] px-2 py-1 rounded-full font-bold uppercase animate-bounce">Otomatis</div>
+                </div>
+                <div class="w-9"></div>
+            </div>
+
+            <div class="book-container flex-1">
+                <div class="book-wrapper" id="page-anim-container">
+                    <div class="flex flex-col justify-center p-3 lg:p-12">
+                        <div class="img-frame">
+                            <img id="page-img" src="" alt="Ilustrasi" class="transition-opacity duration-700">
+                        </div>
+                    </div>
+                    <div class="flex flex-col p-4 md:p-6 lg:p-12">
+                        <div class="flex-1 flex flex-col justify-center">
+                            <h2 id="story-title" class="text-lg md:text-2xl font-magic text-orange-600 mb-2 text-center"></h2>
+                            <p id="story-text" class="text-sm md:text-2xl text-slate-700 leading-relaxed font-semibold text-center lg:text-left overflow-y-auto max-h-[160px] lg:max-h-none">
+                                ...
+                            </p>
+                        </div>
+                        <div class="mt-4 space-y-2">
+                            <div id="narration-box" class="bg-orange-50 p-2 md:p-3 rounded-2xl flex items-center gap-3 border border-orange-100">
+                                <button id="play-btn" onclick="toggleAutoplay()" class="w-10 h-10 md:w-16 md:h-16 bg-orange-500 text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-all">
+                                    <i id="play-icon" class="fas fa-play text-base md:text-2xl ml-1"></i>
+                                </button>
+                                <div class="flex-1">
+                                    <p class="text-[8px] font-bold text-orange-400 uppercase tracking-widest">Dengerin Cerita</p>
+                                    <p id="voice-name" class="text-[10px] md:text-sm font-bold text-orange-900">...</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="prevPage()" class="w-12 h-12 md:w-14 md:h-14 bg-white rounded-xl text-slate-400 shadow-sm border border-slate-100 flex items-center justify-center"><i class="fas fa-chevron-left"></i></button>
+                                <button id="next-btn" onclick="nextPageManual()" class="flex-1 bg-slate-800 text-white font-bold rounded-xl text-xs md:text-lg font-magic py-3">Lanjut Baca</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <p id="page-num" class="text-center mt-4 font-bold text-slate-400"></p>
-        </div>
+        </main>
     </div>
 
     <script>
-        // --- 1. SETTING API KEY ---
-        const API_KEY = "ISI_API_KEY_ANDA_DISINI";
+        const apiKey = ""; 
+        let story = { title: "", pages: [] };
+        let currentIndex = 0;
+        let audio = new Audio();
+        let isPlaying = false;
+        let isAutoplay = false;
 
-        let storyData = { pages: [] };
-        let index = 0;
+        const sleep = ms => new Promise(res => setTimeout(res, ms));
 
-        async function buatCerita() {
-            const nama = document.getElementById('name').value;
-            const tema = document.getElementById('theme').value;
-            if(!nama || !tema) return alert("Isi nama & tema dulu ya!");
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => showMsg("Gagal layar penuh", true));
+            } else {
+                document.exitFullscreen();
+            }
+        }
 
-            document.getElementById('input-ui').classList.add('hidden');
-            document.getElementById('loading-ui').classList.remove('hidden');
+        function showMsg(txt, isErr = false) {
+            const box = document.getElementById('message-box');
+            document.getElementById('message-text').innerText = txt;
+            document.getElementById('message-icon').className = isErr ? "fas fa-times-circle text-red-500" : "fas fa-star text-orange-500";
+            box.classList.remove('translate-x-[150%]', 'opacity-0');
+            setTimeout(() => box.classList.add('translate-x-[150%]', 'opacity-0'), 3000);
+        }
 
-            const prompt = `Buat cerita anak 5 halaman tentang ${nama} dengan tema ${tema}. Format JSON: {"title": "Judul", "pages": [{"text": "Isi cerita halaman ini"}]}`;
+        async function fetchAI(url, body) {
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const r = await fetch(url + `?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                    if (!r.ok) throw new Error();
+                    return await r.json();
+                } catch (e) { await sleep(Math.pow(2, i) * 1000); }
+            }
+            throw new Error("Gagal");
+        }
+
+        async function startMagic() {
+            const charName = document.getElementById('character-name').value.trim();
+            const theme = document.getElementById('story-theme').value.trim();
+            if (!charName || !theme) return showMsg("Isi nama dan temanya dulu ya!", true);
+
+            document.getElementById('input-section').classList.add('hidden');
+            document.getElementById('loading-section').classList.remove('hidden');
 
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "application/json" }
-                    })
-                });
+                const prompt = `Buat cerita anak 8 halaman. Jagoannya bernama ${charName}. Temanya: ${theme}. Pakai bahasa yang santai, asyik, kayak lagi dongeng langsung, jangan kaku. Format JSON: {"title": "Judul", "pages": [{"text": "Cerita", "img_prompt": "deskripsi visual karakter ${charName}..."}]}`;
+                const res = await fetchAI('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent', { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } });
+                story = JSON.parse(res.candidates[0].content.parts[0].text);
 
-                const data = await res.json();
-                const cleanData = JSON.parse(data.candidates[0].content.parts[0].text);
-                storyData = cleanData;
+                for (let i = 0; i < story.pages.length; i++) {
+                    await loadAssets(i);
+                    const progress = ((i + 1) / story.pages.length) * 100;
+                    updateLoading(progress, `Lagi lukis halaman ${i + 1}...`, i + 1, story.pages.length);
+                }
 
-                document.getElementById('loading-ui').classList.add('hidden');
-                document.getElementById('reader-ui').classList.remove('hidden');
-                tampilkanHalaman();
-
-            } catch (err) {
-                alert("Error: Pastikan API KEY benar!");
-                location.reload();
-            }
+                document.getElementById('loading-section').classList.add('hidden');
+                document.getElementById('reader-section').classList.remove('hidden');
+                render();
+            } catch (e) { showMsg("Waduh, sihirnya macet. Coba lagi ya!", true); location.reload(); }
         }
 
-        function tampilkanHalaman() {
-            const hlm = storyData.pages[index];
-            document.getElementById('story-title').innerText = storyData.title;
-            document.getElementById('story-text').innerText = hlm.text;
-            document.getElementById('page-num').innerText = `Halaman ${index + 1} dari ${storyData.pages.length}`;
-            
-            // Gambar otomatis dari internet (Pasti jalan di Vercel)
-            document.getElementById('story-img').src = `https://loremflickr.com/600/600/cartoon,${encodeURIComponent(document.getElementById('theme').value)}?lock=${index}`;
-            
-            window.speechSynthesis.cancel(); // Stop suara sebelumnya
+        async function loadAssets(idx) {
+            const p = story.pages[idx];
+            const [imgRes, audRes] = await Promise.all([
+                fetchAI('https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict', { instances: { prompt: p.img_prompt + ", storybook art, vibrant colors, 3d claymation style, cute" }, parameters: { sampleCount: 1 } }),
+                fetchAI('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent', { contents: [{ parts: [{ text: p.text }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: idx % 2 === 0 ? "Kore" : "Fenrir" } } } } })
+            ]);
+            story.pages[idx].img = `data:image/png;base64,${imgRes.predictions[0].bytesBase64Encoded}`;
+            story.pages[idx].aud = pcmToWav(audRes.candidates[0].content.parts[0].inlineData.data, 24000);
+            story.pages[idx].vName = idx % 2 === 0 ? "Kakak Peri" : "Paman Cerita";
         }
 
-        function nextPage() {
-            if(index < storyData.pages.length - 1) {
-                index++;
-                tampilkanHalaman();
-            } else {
-                alert("Cerita Selesai! Hebat!");
-                location.reload();
-            }
+        function updateLoading(p, s, c, t) {
+            document.getElementById('loading-progress-bar').style.width = p + '%';
+            document.getElementById('loading-status').innerText = s;
+            document.getElementById('loading-counter').innerText = `${c} / ${t} Halaman`;
         }
 
-        function dengarSuara() {
-            const teks = storyData.pages[index].text;
-            const suara = new SpeechSynthesisUtterance(teks);
-            suara.lang = 'id-ID';
-            suara.rate = 0.9;
-            window.speechSynthesis.speak(suara);
+        function render() {
+            const p = story.pages[currentIndex];
+            const anim = document.getElementById('page-anim-container');
+            anim.classList.remove('page-content-animate');
+            void anim.offsetWidth; 
+            anim.classList.add('page-content-animate');
+
+            document.getElementById('story-title').innerText = story.title;
+            document.getElementById('story-text').innerText = p.text;
+            document.getElementById('page-indicator').innerText = `Hal ${currentIndex + 1} / ${story.pages.length}`;
+            document.getElementById('voice-name').innerText = p.vName;
+            document.getElementById('page-img').src = p.img;
+            document.getElementById('next-btn').innerText = currentIndex === story.pages.length - 1 ? "Bikin Lagi ✨" : "Lanjut Baca";
+        }
+
+        function toggleAutoplay() {
+            if (isPlaying) { audio.pause(); isAutoplay = false; isPlaying = false; }
+            else { isAutoplay = true; play(); }
+            updateUI();
+        }
+
+        function play() {
+            audio.src = story.pages[currentIndex].aud;
+            audio.play();
+            isPlaying = true;
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('play-icon').className = isPlaying ? "fas fa-stop text-lg" : "fas fa-play text-lg ml-1";
+            document.getElementById('autoplay-tag').classList.toggle('hidden', !isAutoplay);
+        }
+
+        audio.onended = async () => {
+            isPlaying = false;
+            if (isAutoplay && currentIndex < story.pages.length - 1) {
+                await sleep(1000); currentIndex++; render(); play();
+            } else { isAutoplay = false; updateUI(); }
+        };
+
+        function nextPageManual() {
+            isAutoplay = false; audio.pause();
+            if (currentIndex < story.pages.length - 1) { currentIndex++; render(); updateUI(); }
+            else { location.reload(); }
+        }
+
+        function prevPage() {
+            isAutoplay = false; audio.pause();
+            if (currentIndex > 0) { currentIndex--; render(); updateUI(); }
+        }
+
+        function pcmToWav(b64, rate) {
+            const bin = atob(b64);
+            const buf = new ArrayBuffer(bin.length + 44);
+            const view = new DataView(buf);
+            const s = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+            s(0, 'RIFF'); view.setUint32(4, 36 + bin.length, true); s(8, 'WAVE'); s(12, 'fmt ');
+            view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+            view.setUint32(24, rate, true); view.setUint32(28, rate * 2, true); view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true); s(36, 'data'); view.setUint32(40, bin.length, true);
+            for (let i = 0; i < bin.length; i++) view.setUint8(44 + i, bin.charCodeAt(i));
+            return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
         }
     </script>
 </body>
